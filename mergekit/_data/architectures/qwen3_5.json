@@ -1,5 +1,5 @@
 {
-    "model_type": "qwen3",
+    "model_type": "qwen3_5",
     "architectures": [
         "Qwen3ForCausalLM",
         "Qwen2ForCausalLM"
