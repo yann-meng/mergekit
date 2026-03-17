@@ -1,0 +1,16 @@
+merge_method: multislerp
+base_model: Qwen/Qwen3-4B-Instruct
+models:
+  - model: Qwen/Qwen3-4B-Instruct
+    parameters:
+      weight: 0.60
+  - model: /path/to/Qwen3-4B-sft
+    parameters:
+      weight: 0.25
+  - model: /path/to/Qwen3-4B-grpo
+    parameters:
+      weight: 0.15
+dtype: bfloat16
+tokenizer:
+  source: base
+chat_template: auto
