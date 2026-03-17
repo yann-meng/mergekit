@@ -1,0 +1,18 @@
+merge_method: linear
+models:
+  - model: Qwen/Qwen3-4B-Instruct
+    parameters:
+      weight: 0.60
+  - model: /path/to/Qwen3-4B-sft
+    parameters:
+      weight: 0.25
+  - model: /path/to/Qwen3-4B-grpo
+    parameters:
+      weight: 0.15
+parameters:
+  normalize: true
+dtype: bfloat16
+base_model: Qwen/Qwen3-4B-Instruct
+tokenizer:
+  source: base
+chat_template: auto
