@@ -1,0 +1,11 @@
+merge_method: slerp
+base_model: /Qwen/Qwen3-4B-Instruct
+models:
+  - model: Qwen/Qwen3-4B-Instruct
+  - model: saves/qwen3-4b/qwen3_sft_merged
+parameters:
+  t: 0.2
+dtype: bfloat16
+tokenizer:
+  source: base
+chat_template: auto
