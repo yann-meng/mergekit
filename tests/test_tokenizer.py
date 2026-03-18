@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Union
 
 import pytest
@@ -10,6 +11,7 @@ from transformers import LlamaConfig, LlamaTokenizerFast, PreTrainedTokenizerBas
 
 from mergekit.config import InputModelDefinition, MergeConfiguration
 from mergekit.io import LazyTensorLoader
+from mergekit.tokenizer.embed import PermutedEmbeddings
 from mergekit.tokenizer import TokenizerConfig
 from tests.common import make_picollama, run_and_check_merge
 
@@ -108,6 +110,29 @@ class ModelEmbeddings:
 
 
 class TestTokenizerMerges:
+    def test_skip_permutation_for_non_token_embeddings(self):
+        class _DummyTokenizer:
+            def get_vocab(self):
+                return {"tok0": 0, "tok1": 1, "tok2": 2}
+
+        model_ref = "dummy-model"
+        task = PermutedEmbeddings.model_construct(
+            gather_tensors=None,
+            tokenizer_task=None,
+            tokens=None,
+            pad_to_multiple_of=None,
+            base_model=None,
+        )
+        tokenizer_info = SimpleNamespace(
+            tokenizer=_DummyTokenizer(),
+            permutations={model_ref: {0: 10, 1: 11, 2: 12}},
+            original_vocabs={},
+        )
+        tensors = {model_ref: torch.randn(4, 8)}
+
+        result = task.execute(tokenizer_info=tokenizer_info, tensors=tensors)
+        assert result is tensors
+
     def test_legacy_mode(self, model_base: str, model_padded: str, model_chatml: str):
         config = self.make_config(
             [model_base, model_padded, model_chatml], base_model=model_base

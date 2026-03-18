@@ -44,6 +44,29 @@ class PermutedEmbeddings(Task[Dict[ModelReference, torch.Tensor]]):
             vocab_size = (
                 vocab_size // self.pad_to_multiple_of + 1
             ) * self.pad_to_multiple_of
+
+        # Some architectures mark non-token embeddings (e.g. vision patch/position
+        # embeddings) as `is_embed`. Tokenizer permutation is only valid for token
+        # embeddings where dim 0 indexes vocabulary IDs.
+        max_perm_index = {}
+        for model in models:
+            max_perm_index[model] = max(
+                (idx for idx in permutations[model].values() if idx >= 0), default=-1
+            )
+
+        incompatible_models = [
+            model
+            for model in models
+            if model in tensors and tensors[model].shape[0] <= max_perm_index[model]
+        ]
+        if incompatible_models:
+            logging.warning(
+                "Skipping tokenizer permutation for non-token embedding tensor. "
+                "Incompatible models: %s",
+                ", ".join(str(m) for m in incompatible_models),
+            )
+            return tensors
+
         embed_size = tensors[models[0]].shape[1]
         assert all(
             t.shape[1] == embed_size for t in tensors.values()
